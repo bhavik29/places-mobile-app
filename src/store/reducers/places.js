@@ -14,7 +14,8 @@ const reducer = (state = initialState, action) => {
                     name: action.placeName,
                     image: {
                         uri: "https://previews.agefotostock.com/previewimage/medibigoff/7f245d581aa5ca204972dce38c80c8ec/wr1111717.jpg"
-                    }
+                    },
+                    location: action.location
                 })
             };
         case actionTypes.DELETE_PLACE:
