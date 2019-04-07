@@ -1,13 +1,23 @@
 import React, { Component } from 'react';
 import { View, Image, Text, Button, StyleSheet, TouchableOpacity, Platform, Dimensions } from 'react-native';
 import { connect } from 'react-redux';
+import MapView from 'react-native-maps';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 import { deletePlace } from '../../store/actions/index/';
 
 class PlaceDetail extends Component {
     state = {
-        viewMode: Dimensions.get("window").height > 500 ? "portrait" : "landscape"
+        viewMode: Dimensions.get("window").height > 500 ? "portrait" : "landscape",
+        focusedLocation: {
+            latitude: 37.7900352,
+            longitude: -122.4013726,
+            latitudeDelta: 0.0122,
+            longitudeDelta:
+                Dimensions.get("window").width /
+                Dimensions.get("window").height *
+                0.0122
+        }
     }
 
     constructor(props) {
@@ -30,6 +40,26 @@ class PlaceDetail extends Component {
         this.props.navigator.pop();
     }
 
+    pickLocationHandler = event => {
+        const coords = event.nativeEvent.coordinate;
+        this.map.animateToRegion({
+            ...this.state.focusedLocation,
+            latitude: coords.latitude,
+            longitude: coords.longitude
+        });
+
+        this.setState(prevState => {
+            return {
+                focusedLocation: {
+                    ...prevState.focusedLocation,
+                    latitude: coords.latitude,
+                    longitude: coords.longitude
+                },
+                locationChosen: true
+            }
+        });
+    }
+
     render() {
         return (
             <View style={[
@@ -37,10 +67,27 @@ class PlaceDetail extends Component {
                 this.state.viewMode === "portrait"
                     ? styles.portraitContainer
                     : styles.landscapeContainer]}>
-                <View style={styles.subContainer}>
-                    <Image
-                        source={this.props.selectedPlace.image}
-                        style={styles.placeImage} />
+                <View style={styles.placeDetailContainer}>
+                    <View style={styles.subContainer}>
+                        <Image
+                            source={this.props.selectedPlace.image}
+                            style={styles.placeImage} />
+                    </View>
+                    <View style={styles.subContainer}>
+                        <MapView
+                            initialRegion={{
+                                ...this.props.selectedPlace.location,
+                                latitudeDelta: 0.0122,
+                                longitudeDelta:
+                                    Dimensions.get("window").width /
+                                    Dimensions.get("window").height *
+                                    0.0122
+                            }}
+                            style={styles.map}
+                            onPress={this.pickLocationHandler} >
+                            <MapView.Marker coordinate={this.props.selectedPlace.location} />
+                        </MapView>
+                    </View>
                 </View>
                 <View style={styles.subContainer}>
                     <View>
@@ -71,12 +118,15 @@ const styles = StyleSheet.create({
     portraitContainer: {
         flexDirection: "column"
     },
+    placeDetailContainer: {
+        flex: 2
+    },
     landscapeContainer: {
         flexDirection: "row"
     },
     placeImage: {
         width: "100%",
-        height: 200
+        height: "100%"
     },
     placeName: {
         fontWeight: "bold",
@@ -88,6 +138,9 @@ const styles = StyleSheet.create({
     },
     subContainer: {
         flex: 1
+    },
+    map: {
+        ...StyleSheet.absoluteFillObject
     }
 });
 
