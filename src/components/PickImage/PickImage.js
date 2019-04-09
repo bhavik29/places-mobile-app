@@ -9,7 +9,7 @@ class PickImage extends Component {
         pickedImage: null
     }
 
-    pickImageHandler = () => {
+    pickImageHandler = (res) => {
         ImagePicker.showImagePicker({
             title: "Pick an Image"
         }, res => {
@@ -20,7 +20,11 @@ class PickImage extends Component {
             } else {
                 this.setState({
                     pickedImage: { uri: res.uri }
-                })
+                });
+                this.props.onImagePicked({
+                    uri: res.uri,
+                    base64: res.data
+                });
             }
         });
     }
